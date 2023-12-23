@@ -1,0 +1,55 @@
+﻿@page "/"
+@using LedMatrixDepartureBoard.Services
+@inject UserConfigService UserConfigService
+@inject StationInformationService StationInformationService
+
+<div style="max-width: 900px; display: flex; flex-direction: column; justify-content: space-between; height: 210px;">
+    <h1>Departure Board Config</h1>
+    <Switch TValue="bool" @bind-Checked="@_config.Enabled">Enabled</Switch>
+
+    <Autocomplete TItem="StationInformationService.Station"
+                  TValue="string"
+                  Data="@_stations"
+                  TextField="@((StationInformationService.Station item) => $"{item.Name} ({item.Code})")"
+                  ValueField="@((StationInformationService.Station item) => item.Code)"
+                  @bind-SelectedValue="@_config.StationCode"
+                  Placeholder="Station..."
+                  Filter="AutocompleteFilter.StartsWith"
+                  FreeTyping>
+        <NotFoundContent> Sorry... @context was not found! :( </NotFoundContent>
+    </Autocomplete>
+    
+    <Button Color="Color.Success" @onclick="Save">Save</Button>
+</div>
+
+<Snackbar @ref="snackbar" Color="SnackbarColor.Success" Interval="2000">
+    <SnackbarBody>
+        Saved Successfully
+    </SnackbarBody>
+</Snackbar>
+
+
+@code
+{
+    Snackbar snackbar;
+    private UserConfig _config;
+    private List<StationInformationService.Station> _stations = new List<StationInformationService.Station>();
+
+    protected override void OnInitialized()
+    {
+        _config = UserConfigService.Get();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var stations = await StationInformationService.GetAll();
+        _stations = stations ?? new List<StationInformationService.Station>(0);
+    }
+
+    private void Save()
+    {
+        UserConfigService.Save(_config);
+        snackbar.Show();
+        snackbar.Show();
+    }
+}
