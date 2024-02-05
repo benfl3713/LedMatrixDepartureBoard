@@ -1,8 +1,8 @@
 .SILENT:
 .ONESHELL:
 
-HOST=ben@radarlights
-DEPLOY_PATH=/home/ben/departureboard
+HOST=<user@host>
+DEPLOY_PATH=/home/<user>/departureboard
 
 .PHONY: build
 build:
