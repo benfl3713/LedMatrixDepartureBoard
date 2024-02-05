@@ -3,20 +3,20 @@ using RpiLedMatrix;
 
 namespace LedMatrixDepartureBoard.Models;
 
-public record DepartureRow(Color MainColor, int Order, int rowCount, DateTime? AimedDeparture, string? Platform, string Destination, Departure.ServiceStatus Status, DateTime? ExpectedDeparture, bool IsCancelled = false)
+public record DepartureRow(int frameCounter, Color MainColor, int Order, int RowCount, DateTime? AimedDeparture, string? Platform, string Destination, Departure.ServiceStatus Status, DateTime? ExpectedDeparture)
 {
     private static BdfFont _font = new BdfFont("/home/ben/rpi-rgb-led-matrix/fonts/7x14.bdf");
     public readonly int MaxFontHeight = _font.BoundingBox.Y;
     
     public void Draw(ILedMatrix matrix, int lineOffset = 0, int? maxLineNumber = null)
     {
-        int y = (Order - 1) * 20 + 15;
+        int y = (Order - 1) * 15 + 15;
         y -= lineOffset;
 
         if (maxLineNumber.HasValue)
             y += MaxFontHeight - maxLineNumber.Value;
         
-        matrix.DrawText(_font, 1, y, MainColor, $"{rowCount}{GetOrderExtention()}", lineOffset, maxLineNumber);
+        matrix.DrawText(_font, 1, y, MainColor, $"{RowCount}{GetOrderExtention()}", lineOffset, maxLineNumber);
         matrix.DrawText(_font, 25, y, MainColor, AimedDeparture.Value.ToString("HH:mm"), lineOffset, maxLineNumber);
 
         if (!string.IsNullOrEmpty(Platform))
@@ -31,6 +31,7 @@ public record DepartureRow(Color MainColor, int Order, int rowCount, DateTime? A
         {
             int statusLength = GetStatusText().Item1.Length;
             int maxLength = 22 - statusLength;
+            
             matrix.DrawText(_font, 85, y, MainColor, Destination[..maxLength] + "..", lineOffset, maxLineNumber);
         }
         else
@@ -64,7 +65,7 @@ public record DepartureRow(Color MainColor, int Order, int rowCount, DateTime? A
 
     private string GetOrderExtention()
     {
-        int lastDigit = rowCount % 10;
+        int lastDigit = RowCount % 10;
         return lastDigit switch
         {
             1 => "st",

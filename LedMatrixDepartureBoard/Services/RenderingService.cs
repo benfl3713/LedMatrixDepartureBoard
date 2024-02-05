@@ -10,6 +10,7 @@ public class RenderingService : BackgroundService
     private readonly DepartureCacheService _departureCacheService;
     private readonly AppConfig _appConfig;
     private readonly UserConfigService _userConfigService;
+    private readonly StationInformationService _stationInformationService;
     private readonly BdfFont _font = new BdfFont("/home/ben/rpi-rgb-led-matrix/fonts/7x14.bdf");
     private string _lastInfoMessage = ""; 
 
@@ -20,12 +21,13 @@ public class RenderingService : BackgroundService
     private Stopwatch _rowSwitchTimer = Stopwatch.StartNew();
     private UserConfig _userConfig;
 
-    public RenderingService(ILedMatrix matrix, DepartureCacheService departureCacheService, AppConfig appConfig, UserConfigService userConfigService)
+    public RenderingService(ILedMatrix matrix, DepartureCacheService departureCacheService, AppConfig appConfig, UserConfigService userConfigService, StationInformationService stationInformationService)
     {
         _matrix = matrix;
         _departureCacheService = departureCacheService;
         _appConfig = appConfig;
         _userConfigService = userConfigService;
+        _stationInformationService = stationInformationService;
         _userConfig = _userConfigService.Get();
         _userConfigService.ConfigChange += (_, config) => _userConfig = config;
     }
@@ -51,7 +53,7 @@ public class RenderingService : BackgroundService
             await DrawFrame(_departureCacheService.Data.SingleboardResponse, stoppingToken);
         }
 
-        Console.WriteLine("Stopping Rendering from executeing");
+        Console.WriteLine("Stopping Rendering from executing");
     }
 
     private async Task DrawFrame(SingleboardResponse singleboardResponse, CancellationToken stoppingToken)
@@ -63,13 +65,23 @@ public class RenderingService : BackgroundService
         if (departures.Count > 0)
         {
             var firstDeparture = departures[0];
-            DepartureRow row = new DepartureRow(_appConfig.GetMainColor(), 1,1, firstDeparture.AimedDeparture, firstDeparture.Platform, firstDeparture.Destination, firstDeparture.Status, firstDeparture.ExpectedDeparture);
+            DepartureRow row = new DepartureRow(_fifteenFpsCounter, _userConfig.GetTextColor(), 1,1, firstDeparture.AimedDeparture, firstDeparture.Platform, firstDeparture.Destination, firstDeparture.Status, firstDeparture.ExpectedDeparture);
             row.Draw(_matrix);
         }
 
         if (departures.Count > 1)
+        {
             DrawSecondDepartureRow(departures);
-        
+        }
+
+        if (!string.IsNullOrEmpty(_userConfig.CustomMessage))
+        {
+            string message = ProcessCustomMessage(_userConfig.CustomMessage);
+            int pixelLength = message.Length * 7;
+            var x = (int.Parse(_appConfig.FullCols) - pixelLength) / 2;
+            _matrix.DrawText(_font, x, 60, _userConfig.GetTextColor(), message);
+        }
+
         DrawInfoRow(singleboardResponse);
 
         _matrix.Update();
@@ -87,10 +99,17 @@ public class RenderingService : BackgroundService
             _fifteenFpsCounter = 0;
     }
 
+    private string ProcessCustomMessage(string userConfigCustomMessage)
+    {
+        return userConfigCustomMessage
+            .Replace("{Time}", DateTime.Now.ToString("HH:mm:ss"))
+            .Replace("{Station}", _stationInformationService.GetName(_userConfig.StationCode));
+    }
+
     private void DrawSecondDepartureRow(List<Departure> departures)
     {
         var secondDeparture = departures[1];
-        DepartureRow row = new DepartureRow(_appConfig.GetMainColor(), 3, 2, secondDeparture.AimedDeparture, secondDeparture.Platform,
+        DepartureRow row = new DepartureRow(_fifteenFpsCounter, _userConfig.GetTextColor(), 3, 2, secondDeparture.AimedDeparture, secondDeparture.Platform,
             secondDeparture.Destination, secondDeparture.Status, secondDeparture.ExpectedDeparture);
         
         if (departures.Count == 1)
@@ -102,7 +121,7 @@ public class RenderingService : BackgroundService
         bool runAnimation = _rowSwitchTimer.Elapsed.TotalSeconds > 8;
         
         var departure = departures[_activeSecondRowDeparture];
-        DepartureRow activeRow = new DepartureRow(_appConfig.GetMainColor(), 3, _activeSecondRowDeparture + 1, departure.AimedDeparture, departure.Platform,
+        DepartureRow activeRow = new DepartureRow(_fifteenFpsCounter, _userConfig.GetTextColor(), 3, _activeSecondRowDeparture + 1, departure.AimedDeparture, departure.Platform,
             departure.Destination, departure.Status, departure.ExpectedDeparture);
 
         if (!runAnimation)
@@ -117,7 +136,7 @@ public class RenderingService : BackgroundService
         int newIndex = _activeSecondRowDeparture == 1 ? 2 : 1;
         
         var newDeparture = departures[newIndex];
-        DepartureRow newRow = new DepartureRow(_appConfig.GetMainColor(), 3, newIndex + 1, newDeparture.AimedDeparture, newDeparture.Platform,
+        DepartureRow newRow = new DepartureRow(_fifteenFpsCounter, _userConfig.GetTextColor(), 3, newIndex + 1, newDeparture.AimedDeparture, newDeparture.Platform,
             newDeparture.Destination, newDeparture.Status, newDeparture.ExpectedDeparture);
         
         if (_rowAnimateOffset > row.MaxFontHeight)
@@ -141,7 +160,7 @@ public class RenderingService : BackgroundService
         if (info != _lastInfoMessage)
             _currentInfoScrollPos = -249;
 
-        _matrix.DrawText(_font, 2 - _currentInfoScrollPos, 35, _appConfig.GetMainColor(), info);
+        _matrix.DrawText(_font, 2 - _currentInfoScrollPos, 30, _userConfig.GetTextColor(), info);
         _currentInfoScrollPos += 1;
 
         if (_currentInfoScrollPos > 7 * info.Length)

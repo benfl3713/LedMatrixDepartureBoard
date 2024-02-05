@@ -3,7 +3,7 @@
 @inject UserConfigService UserConfigService
 @inject StationInformationService StationInformationService
 
-<div style="max-width: 900px; display: flex; flex-direction: column; justify-content: space-between; height: 210px;">
+<div style="max-width: 900px; display: flex; flex-direction: column; justify-content: space-between; height: 300px;">
     <h1>Departure Board Config</h1>
     <Switch TValue="bool" @bind-Checked="@_config.Enabled">Enabled</Switch>
 
@@ -14,10 +14,16 @@
                   ValueField="@((StationInformationService.Station item) => item.Code)"
                   @bind-SelectedValue="@_config.StationCode"
                   Placeholder="Station..."
-                  Filter="AutocompleteFilter.StartsWith"
+                  Filter="AutocompleteFilter.Contains"
                   FreeTyping>
         <NotFoundContent> Sorry... @context was not found! :( </NotFoundContent>
     </Autocomplete>
+    
+    <ColorEdit @bind-Color="@_config.TextColor" />
+    
+    <Field>
+        <TextEdit @bind-Text="@_config.CustomMessage" Placeholder="Custom Message" />
+    </Field>
     
     <Button Color="Color.Success" @onclick="Save">Save</Button>
 </div>
