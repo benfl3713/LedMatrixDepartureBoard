@@ -19,12 +19,13 @@ public class ServiceManager : BackgroundService
     
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _userConfigService.ConfigChange += (object? _, UserConfig e) => UserConfigServiceOnConfigChange(_, e);
+        _userConfigService.ConfigChange += UserConfigServiceOnConfigChange;
         return Task.CompletedTask;
     }
 
-    private void UserConfigServiceOnConfigChange(object? sender, UserConfig e)
+    private async void UserConfigServiceOnConfigChange(object? sender, UserConfig e)
     {
+        await Task.Delay(300);
         if (e.Enabled != _userConfig.Enabled)
         {
             if (e.Enabled)

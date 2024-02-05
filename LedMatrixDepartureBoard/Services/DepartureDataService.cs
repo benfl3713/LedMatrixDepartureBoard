@@ -34,7 +34,8 @@ public class DepartureDataService : BackgroundService
         
         while (!stoppingToken.IsCancellationRequested)
         {
-            await UpdateData();
+            if (_userConfig.Enabled)
+                await UpdateData();
             await Task.Delay(20000, stoppingToken);
         }
     }
