@@ -30,7 +30,7 @@ Once you have followed the above guide and got a demo working, you should be rea
 > The following commands should be run from the raspberry pi
 1. Download the latest version of the project (This is a pre-release at the moment. Only works on Pi 4, can however be compiled to run on Pi 3)
 ```bash
-wget https://github.com/benfl3713/LedMatrixDepartureBoard/releases/download/v0.1/departure-linux-arm64.zip
+wget https://github.com/benfl3713/LedMatrixDepartureBoard/releases/download/v0.2/departure-linux-arm64.zip
 ```
 
 2. Extract the zip file to a folder
