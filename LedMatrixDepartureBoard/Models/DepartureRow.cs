@@ -6,7 +6,7 @@ namespace LedMatrixDepartureBoard.Models;
 
 public record DepartureRow(int frameCounter, Color MainColor, int Order, int RowCount, DateTime? AimedDeparture, string? Platform, string Destination, Departure.ServiceStatus Status, DateTime? ExpectedDeparture)
 {
-    private static BdfFont _font = new BdfFont($"${Assembly.GetExecutingAssembly()}/Fonts/7x14.bdf");
+    private static BdfFont _font = new BdfFont($"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}/Fonts/7x14.bdf");
     public readonly int MaxFontHeight = _font.BoundingBox.Y;
     
     public void Draw(ILedMatrix matrix, int lineOffset = 0, int? maxLineNumber = null)
