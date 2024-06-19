@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 using BdfFontParser;
 using LedMatrixDepartureBoard.Models;
 
@@ -11,7 +12,7 @@ public class RenderingService : BackgroundService
     private readonly AppConfig _appConfig;
     private readonly UserConfigService _userConfigService;
     private readonly StationInformationService _stationInformationService;
-    private readonly BdfFont _font = new BdfFont("/home/ben/rpi-rgb-led-matrix/fonts/7x14.bdf");
+    private readonly BdfFont _font = new BdfFont($"${Assembly.GetExecutingAssembly()}/Fonts/7x14.bdf");
     private string _lastInfoMessage = ""; 
 
     private int _currentInfoScrollPos = -249;
