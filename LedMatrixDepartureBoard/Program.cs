@@ -1,3 +1,5 @@
+using System.Reflection;
+using BdfFontParser;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
@@ -8,6 +10,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http;
 using Serilog;
 using Serilog.Events;
+
+Console.WriteLine("Starting test load of font");
+var test = new BdfFont($"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}/Fonts/7x14.bdf");
+test.GetMapOfString("Hello");
+
+Console.WriteLine("Font loaded successfully");
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
